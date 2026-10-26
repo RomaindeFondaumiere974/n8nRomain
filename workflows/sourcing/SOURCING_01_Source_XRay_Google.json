@@ -1,0 +1,116 @@
+{
+  "name": "SOURCING_01_Source_XRay_Google",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "id": "c0857b80-be5a-5165-b460-ba6db901625a",
+      "name": "▶️ Appelé par le workflow principal",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Une requête Google par page de résultats.\nconst out = [];\nfor (const it of $input.all()) {\n  const t = it.json;\n  const pages = Math.max(1, Number(t.pages) || 1);\n  for (let p = 1; p <= pages; p++) {\n    out.push({ json: { ...t, page: p } });\n  }\n}\nreturn out;\n"
+      },
+      "id": "374e65f3-16ca-5662-8c25-01ab44e3ebca",
+      "name": "📄 Pages à interroger",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://google.serper.dev/search",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ q: $json.query, gl: $json.gl, hl: $json.hl, num: 10, page: $json.page }) }}",
+        "options": {
+          "batching": {
+            "batch": {
+              "batchSize": 3,
+              "batchInterval": 1000
+            }
+          },
+          "timeout": 30000
+        }
+      },
+      "id": "be6d80d5-8c89-542e-8366-c01f2a8d8dca",
+      "name": "🔍 Serper · Recherche Google",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        440,
+        300
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Transforme les résultats Google en fiches profil.\nconst tasks = $('📄 Pages à interroger').all().map(i => i.json);\n\nconst PROFILE_URL = {\n  linkedin: /linkedin\\.com\\/in\\/[^/?#]+/i,\n  malt: /malt\\.[a-z.]+\\/profile\\/[^/?#]+/i,\n};\n\nfunction splitTitle(title) {\n  // \"Jeanne Martin - Data Engineer - Qonto | LinkedIn\" -> [nom, titre, entreprise]\n  const clean = String(title || '')\n    .replace(/\\s*[|·]\\s*(LinkedIn|Malt)\\s*$/i, '')\n    .replace(/\\s*\\.\\.\\.\\s*$/, '');\n  return clean.split(/\\s+[-–—]\\s+/).map(s => s.trim()).filter(Boolean);\n}\n\nfunction guessLocation(snippet) {\n  const m = String(snippet || '').match(/(?:Lieu|Location|Localisation)\\s*:\\s*([^·|.]+)/i);\n  return m ? m[1].trim() : '';\n}\n\nconst out = [];\n$input.all().forEach((it, idx) => {\n  const t = tasks[idx] || {};\n  const organic = (it.json && it.json.organic) || [];\n  for (const r of organic) {\n    const link = r.link || '';\n    const pattern = PROFILE_URL[t.platform];\n    if (pattern && !pattern.test(link)) continue;\n    if (t.platform === 'custom' && t.customDomain && !link.toLowerCase().includes(t.customDomain.split('/')[0].toLowerCase())) continue;\n\n    const parts = splitTitle(r.title);\n    out.push({\n      json: {\n        searchId: t.searchId,\n        platform: t.platform,\n        source: 'google-xray',\n        profileUrl: pattern ? 'https://' + link.match(pattern)[0] : link,\n        name: parts[0] || '',\n        headline: parts[1] || '',\n        company: parts.slice(2).join(' - '),\n        location: guessLocation(r.snippet),\n        snippet: [r.title, r.snippet].filter(Boolean).join(' · '),\n        query: t.query,\n        googlePosition: r.position,\n      },\n    });\n  }\n});\nreturn out;\n"
+      },
+      "id": "5f8a3af1-974c-572c-aa03-398acbec9b8a",
+      "name": "🧾 Extraire les profils",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "▶️ Appelé par le workflow principal": {
+      "main": [
+        [
+          {
+            "node": "📄 Pages à interroger",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📄 Pages à interroger": {
+      "main": [
+        [
+          {
+            "node": "🔍 Serper · Recherche Google",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔍 Serper · Recherche Google": {
+      "main": [
+        [
+          {
+            "node": "🧾 Extraire les profils",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "pinData": {}
+}

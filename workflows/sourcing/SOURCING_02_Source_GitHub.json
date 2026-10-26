@@ -1,0 +1,176 @@
+{
+  "name": "SOURCING_02_Source_GitHub",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "id": "c0857b80-be5a-5165-b460-ba6db901625a",
+      "name": "▶️ Appelé par le workflow principal",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://api.github.com/search/users",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "={{ $json.query }}"
+            },
+            {
+              "name": "per_page",
+              "value": "={{ $json.perPage || 20 }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/vnd.github+json"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "15a461f7-9142-5ab4-a287-635005ffe47f",
+      "name": "🐙 GitHub · Rechercher des utilisateurs",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        220,
+        300
+      ],
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 5000,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Liste les comptes trouvés par la recherche GitHub.\nconst task = $('▶️ Appelé par le workflow principal').first().json;\nconst res = $input.first().json || {};\nif (res.message && !res.items) {\n  // Requête refusée (syntaxe ou quota) : on n'arrête pas toute la recherche pour autant.\n  console.log('GitHub search error: ' + res.message);\n  return [];\n}\nreturn (res.items || [])\n  .filter(u => u.type === 'User')\n  .slice(0, task.perPage || 20)\n  .map(u => ({ json: { apiUrl: u.url, query: task.query, searchId: task.searchId } }));\n"
+      },
+      "id": "29df6405-e13b-5e0c-9bca-f0e5b39fa285",
+      "name": "📋 Lister les comptes",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.apiUrl }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/vnd.github+json"
+            }
+          ]
+        },
+        "options": {
+          "batching": {
+            "batch": {
+              "batchSize": 10,
+              "batchInterval": 1000
+            }
+          },
+          "timeout": 30000
+        }
+      },
+      "id": "626902a0-1c27-508d-b029-e03b1692a6a9",
+      "name": "🐙 GitHub · Détail du profil",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        660,
+        300
+      ],
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 3000,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Fiche profil homogène avec les autres sources.\nconst list = $('📋 Lister les comptes').all().map(i => i.json);\nreturn $input.all()\n  .map((it, idx) => ({ u: it.json || {}, t: list[idx] || {} }))\n  .filter(({ u }) => u.html_url)\n  .map(({ u, t }) => ({\n    json: {\n      searchId: t.searchId,\n      platform: 'github',\n      source: 'github-api',\n      profileUrl: u.html_url,\n      name: u.name || u.login,\n      headline: u.bio || '',\n      company: (u.company || '').replace(/^@/, ''),\n      location: u.location || '',\n      snippet: [u.bio, u.company, u.location, u.blog].filter(Boolean).join(' · '),\n      extra: {\n        login: u.login,\n        followers: u.followers,\n        public_repos: u.public_repos,\n        hireable: u.hireable,\n        blog: u.blog || null,\n        email_public: u.email || null,\n        compte_cree_le: u.created_at,\n        derniere_activite: u.updated_at,\n      },\n      query: t.query,\n    },\n  }));\n"
+      },
+      "id": "fc3c2042-5052-52d3-af64-eecdb64ed6ac",
+      "name": "🧾 Normaliser les profils",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "▶️ Appelé par le workflow principal": {
+      "main": [
+        [
+          {
+            "node": "🐙 GitHub · Rechercher des utilisateurs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🐙 GitHub · Rechercher des utilisateurs": {
+      "main": [
+        [
+          {
+            "node": "📋 Lister les comptes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📋 Lister les comptes": {
+      "main": [
+        [
+          {
+            "node": "🐙 GitHub · Détail du profil",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🐙 GitHub · Détail du profil": {
+      "main": [
+        [
+          {
+            "node": "🧾 Normaliser les profils",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "pinData": {}
+}

@@ -1,0 +1,644 @@
+{
+  "name": "SOURCING_00_Formulaire_Recherche_Profils",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Sourcing de profils\n1. Importer aussi les 2 sous-workflows et copier leurs IDs dans **⚙️ Config**.\n2. Renseigner l'ID du Google Sheet (onglet `Profils`).\n3. Credentials : Basic Auth (formulaire), Anthropic, Google Sheets, Gmail.\n4. Activer le workflow, puis ouvrir l'URL de production du formulaire.\n\nDétails : `workflows/sourcing/README.md`",
+        "height": 240,
+        "width": 420
+      },
+      "id": "d1eacec8-3b8c-5ce4-b7e6-590801697dbd",
+      "name": "Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -40,
+        -40
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "basicAuth",
+        "formTitle": "Recherche de profils",
+        "formDescription": "Décris le profil recherché. La recherche tourne en arrière-plan (2 à 6 minutes) et les résultats notés arrivent par email et dans le Google Sheet.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Intitulé du poste",
+              "placeholder": "Ex : Data Engineer senior",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Description du profil idéal",
+              "fieldType": "textarea",
+              "placeholder": "Contexte, missions, ce qui ferait la différence, ce que tu ne veux surtout pas...",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Compétences indispensables",
+              "placeholder": "Séparées par des virgules : Python, Airflow, GCP"
+            },
+            {
+              "fieldLabel": "Compétences appréciées",
+              "placeholder": "Séparées par des virgules"
+            },
+            {
+              "fieldLabel": "Localisation",
+              "placeholder": "Ex : Paris, Lyon, La Réunion, remote France"
+            },
+            {
+              "fieldLabel": "Années d'expérience minimum",
+              "fieldType": "number",
+              "placeholder": "Ex : 5"
+            },
+            {
+              "fieldLabel": "Secteurs ou entreprises cibles",
+              "placeholder": "Ex : fintech, Qonto, Alan, cabinets Big Four"
+            },
+            {
+              "fieldLabel": "À exclure (entreprises, mots-clés)",
+              "placeholder": "Ex : stagiaire, alternance, ESN"
+            },
+            {
+              "fieldLabel": "Langue des profils",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Français"
+                  },
+                  {
+                    "option": "Anglais"
+                  },
+                  {
+                    "option": "Peu importe"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Plateformes",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "LinkedIn"
+                  },
+                  {
+                    "option": "Malt"
+                  },
+                  {
+                    "option": "GitHub"
+                  },
+                  {
+                    "option": "Autre site (X-ray)"
+                  }
+                ]
+              },
+              "multiselect": true,
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Autre site à cibler (domaine)",
+              "placeholder": "Ex : behance.net ou codeur.com/-"
+            },
+            {
+              "fieldLabel": "Nombre max de profils à analyser",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "20"
+                  },
+                  {
+                    "option": "50"
+                  },
+                  {
+                    "option": "100"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Email pour recevoir les résultats",
+              "fieldType": "email",
+              "requiredField": true
+            }
+          ]
+        },
+        "responseMode": "onReceived",
+        "options": {
+          "appendAttribution": false,
+          "path": "sourcing-profils",
+          "respondWithOptions": {
+            "values": {
+              "respondWith": "text",
+              "formSubmittedText": "Recherche lancée. Tu recevras les profils par email d'ici quelques minutes."
+            }
+          }
+        }
+      },
+      "id": "681d2d5c-89b0-5218-b7ab-c52823d19fb6",
+      "name": "📝 Formulaire de recherche",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        300
+      ],
+      "webhookId": "880041b8-3e6a-5643-aa13-8bbccc6c45b6"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d592f668-edbb-5ba1-ac8f-b8cd2e5749e7",
+              "name": "SUBWF_XRAY_ID",
+              "value": "A_REMPLIR",
+              "type": "string"
+            },
+            {
+              "id": "2ff9a1bb-663d-5ac1-9df0-bef9c8922817",
+              "name": "SUBWF_GITHUB_ID",
+              "value": "A_REMPLIR",
+              "type": "string"
+            },
+            {
+              "id": "f99f1a10-0875-5cde-8fcc-d207d346cbbd",
+              "name": "GSHEET_ID",
+              "value": "1XED45FG8yd6Bkn7AcGq0FBshIU8rS-QANRqumEQK6ck",
+              "type": "string"
+            },
+            {
+              "id": "b50775cc-37f3-5725-bae9-3e9816bc832f",
+              "name": "GSHEET_TAB",
+              "value": "Profils",
+              "type": "string"
+            },
+            {
+              "id": "0bf434bf-5f51-5aa0-bca9-07547cf17e44",
+              "name": "CLAUDE_MODEL",
+              "value": "claude-opus-5-5",
+              "type": "string"
+            },
+            {
+              "id": "387f542d-675b-517b-9314-fedcfb3929e4",
+              "name": "MIN_SCORE_EMAIL",
+              "value": 60,
+              "type": "number"
+            },
+            {
+              "id": "a7994dc9-4c98-5ef9-a9bb-ef88fc44b592",
+              "name": "SCORING_BATCH_SIZE",
+              "value": 15,
+              "type": "number"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "209f59a3-6b4b-5f13-bf5c-6a5f840ded98",
+      "name": "⚙️ Config",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        220,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Transforme les réponses du formulaire en critères propres\n// et prépare l'appel à Claude qui écrit les requêtes de recherche.\nconst f = $input.first().json;\n\nconst list = s => String(s || '').split(/[,;\\n]/).map(x => x.trim()).filter(Boolean);\n\nlet picked = f['Plateformes'];\nif (typeof picked === 'string') {\n  try { picked = JSON.parse(picked); } catch (e) { picked = [picked]; }\n}\nconst MAP = { 'LinkedIn': 'linkedin', 'Malt': 'malt', 'GitHub': 'github', 'Autre site (X-ray)': 'custom' };\nlet platforms = (picked || []).map(p => MAP[p]).filter(Boolean);\n\nconst customDomain = String(f['Autre site à cibler (domaine)'] || '')\n  .trim().replace(/^https?:\\/\\//, '').replace(/^www\\./, '').replace(/\\/+$/, '');\nif (platforms.includes('custom') && !customDomain) {\n  platforms = platforms.filter(p => p !== 'custom');\n}\nif (!platforms.length) {\n  throw new Error('Aucune plateforme exploitable. Si tu coches \"Autre site\", renseigne le domaine.');\n}\n\nfor (const k of ['SUBWF_XRAY_ID', 'SUBWF_GITHUB_ID', 'GSHEET_ID']) {\n  if (!f[k] || f[k] === 'A_REMPLIR') {\n    throw new Error('Config incomplète : renseigne ' + k + ' dans le nœud \"⚙️ Config\".');\n  }\n}\n\nconst criteria = {\n  poste: String(f['Intitulé du poste'] || '').trim(),\n  description: String(f['Description du profil idéal'] || '').trim(),\n  competences_indispensables: list(f['Compétences indispensables']),\n  competences_appreciees: list(f['Compétences appréciées']),\n  localisation: String(f['Localisation'] || '').trim(),\n  experience_min_annees: Number(f[\"Années d'expérience minimum\"]) || null,\n  cibles: list(f['Secteurs ou entreprises cibles']),\n  exclusions: list(f['À exclure (entreprises, mots-clés)']),\n  langue: f['Langue des profils'] || 'Peu importe',\n};\n\nconst maxProfiles = parseInt(f['Nombre max de profils à analyser'], 10) || 50;\nconst searchId = 'SRC-' + $now.toFormat('yyyyLLdd-HHmmss');\n\nconst PLATFORM_HELP = {\n  linkedin: \"LinkedIn via Google (l'opérateur site:linkedin.com/in est ajouté automatiquement, ne l'écris pas).\",\n  malt: \"Malt via Google (site:malt.fr/profile est ajouté automatiquement, ne l'écris pas).\",\n  custom: 'Le site ' + customDomain + ' via Google (site:' + customDomain + ' est ajouté automatiquement, ne l\\'écris pas).',\n  github: \"L'API de recherche d'utilisateurs GitHub. Syntaxe GitHub uniquement : location:, language:, followers:>N, repos:>N, type:user. Pas d'opérateurs Google. La bio n'est pas cherchable : mise sur la localisation et les langages.\",\n};\n\nconst system = [\n  \"Tu es un sourceur senior. Tu transformes un besoin de recrutement en requêtes de recherche précises.\",\n  \"Pour les plateformes passant par Google (X-ray) :\",\n  \"- utilise les guillemets pour les intitulés exacts, OR en majuscules pour les variantes, le signe moins pour exclure ;\",\n  \"- reste sous 25 mots par requête, Google ignore la suite ;\",\n  \"- varie les angles entre requêtes : synonymes d'intitulé, compétence rare, localisation proche, intitulé en anglais ;\",\n  \"- une requête trop stricte ne renvoie rien : combine au plus 2 compétences obligatoires par requête.\",\n  \"Écris entre 2 et 4 requêtes par plateforme demandée, aucune pour les autres.\",\n  \"google_country est le code pays ISO à 2 lettres en minuscules le plus pertinent pour la localisation (fr par défaut).\",\n  \"scoring_guide résume en 5 à 8 lignes ce qui distingue un excellent profil d'un profil moyen pour ce besoin, il servira à noter les candidats.\",\n].join('\\n');\n\nconst user = [\n  'Plateformes à couvrir :',\n  ...platforms.map(p => '- ' + p + ' : ' + PLATFORM_HELP[p]),\n  '',\n  'Besoin :',\n  JSON.stringify(criteria, null, 2),\n].join('\\n');\n\nconst llmBody = {\n  model: f.CLAUDE_MODEL,\n  max_tokens: 16000,\n  fallbacks: 'default',\n  output_config: {\n    effort: 'medium',\n    format: {\n      type: 'json_schema',\n      schema: {\n        type: 'object',\n        additionalProperties: false,\n        required: ['queries', 'google_country', 'scoring_guide'],\n        properties: {\n          queries: {\n            type: 'array',\n            items: {\n              type: 'object',\n              additionalProperties: false,\n              required: ['platform', 'query', 'angle'],\n              properties: {\n                platform: { type: 'string', enum: ['linkedin', 'malt', 'github', 'custom'] },\n                query: { type: 'string' },\n                angle: { type: 'string', description: \"Ce que cette requête cherche à capter, en une phrase.\" },\n              },\n            },\n          },\n          google_country: { type: 'string' },\n          scoring_guide: { type: 'string' },\n        },\n      },\n    },\n  },\n  system,\n  messages: [{ role: 'user', content: user }],\n};\n\nreturn [{\n  json: {\n    searchId,\n    submittedAt: $now.toISO(),\n    email: f['Email pour recevoir les résultats'],\n    platforms,\n    customDomain,\n    maxProfiles,\n    criteria,\n    config: {\n      SUBWF_XRAY_ID: f.SUBWF_XRAY_ID,\n      SUBWF_GITHUB_ID: f.SUBWF_GITHUB_ID,\n      GSHEET_ID: f.GSHEET_ID,\n      GSHEET_TAB: f.GSHEET_TAB,\n      CLAUDE_MODEL: f.CLAUDE_MODEL,\n      MIN_SCORE_EMAIL: Number(f.MIN_SCORE_EMAIL) || 60,\n      SCORING_BATCH_SIZE: Number(f.SCORING_BATCH_SIZE) || 15,\n    },\n    llmBody,\n  },\n}];\n"
+      },
+      "id": "88283f71-bacd-5b3f-b48c-a2ed213b2d5b",
+      "name": "🧹 Normaliser les critères",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "anthropicApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "anthropic-beta",
+              "value": "server-side-fallback-2026-07-01"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.llmBody) }}",
+        "options": {
+          "timeout": 180000
+        }
+      },
+      "id": "8f5a456d-bd1e-5547-9fb8-270fb12f8e6b",
+      "name": "🤖 Claude · Générer les requêtes",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        660,
+        300
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "jsCode": "function readClaude(resp, label) {\n  if (!resp || !Array.isArray(resp.content)) {\n    throw new Error(label + ' : réponse Claude inattendue : ' + JSON.stringify(resp).slice(0, 500));\n  }\n  if (resp.stop_reason === 'refusal') {\n    throw new Error(label + ' : Claude a refusé la demande (' + JSON.stringify(resp.stop_details) + ')');\n  }\n  if (resp.stop_reason === 'max_tokens') {\n    throw new Error(label + ' : réponse coupée (max_tokens). Réduis la taille des lots.');\n  }\n  const text = resp.content.filter(b => b.type === 'text').map(b => b.text).join('');\n  try {\n    return JSON.parse(text);\n  } catch (e) {\n    throw new Error(label + ' : JSON illisible : ' + text.slice(0, 500));\n  }\n}\n\n// Une tâche = une requête à exécuter par le bon sous-workflow.\nconst ctx = $('🧹 Normaliser les critères').first().json;\nconst plan = readClaude($input.first().json, 'Génération des requêtes');\n\nconst queries = (plan.queries || []).filter(q => ctx.platforms.includes(q.platform) && q.query && q.query.trim());\nif (!queries.length) throw new Error('Claude n\\'a produit aucune requête exploitable.');\n\nconst SITE = {\n  linkedin: 'site:linkedin.com/in',\n  malt: 'site:malt.fr/profile',\n  custom: 'site:' + ctx.customDomain,\n};\n\nconst country = /^[a-z]{2}$/.test(plan.google_country || '') ? plan.google_country : 'fr';\nconst hl = ctx.criteria.langue === 'Anglais' ? 'en' : 'fr';\n\nconst xrayCount = queries.filter(q => q.platform !== 'github').length;\nconst githubCount = queries.length - xrayCount;\n// Google renvoie 10 résultats par page : on ajuste le nombre de pages au volume demandé.\nconst pagesPerQuery = xrayCount ? Math.min(3, Math.max(1, Math.ceil(ctx.maxProfiles / (xrayCount * 8)))) : 0;\nconst perGithubQuery = githubCount ? Math.min(30, Math.max(10, Math.ceil(ctx.maxProfiles / githubCount))) : 0;\n\nreturn queries.map(q => {\n  const isGithub = q.platform === 'github';\n  return {\n    json: {\n      searchId: ctx.searchId,\n      platform: q.platform,\n      angle: q.angle,\n      rawQuery: q.query.trim(),\n      query: isGithub ? q.query.trim() : SITE[q.platform] + ' ' + q.query.trim(),\n      subWorkflowId: isGithub ? ctx.config.SUBWF_GITHUB_ID : ctx.config.SUBWF_XRAY_ID,\n      pages: pagesPerQuery,\n      perPage: perGithubQuery,\n      gl: country,\n      hl,\n      customDomain: ctx.customDomain,\n      scoringGuide: plan.scoring_guide,\n    },\n  };\n});\n"
+      },
+      "id": "9d84b84c-214e-5ac7-9965-ece62921d6e9",
+      "name": "🗂️ Préparer les tâches",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "={{ $json.subWorkflowId }}",
+          "mode": "id"
+        },
+        "mode": "each",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "id": "3973113f-dd48-5ed0-8eba-7026cfa6635a",
+      "name": "🔎 Lancer les recherches",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        1100,
+        300
+      ],
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Fusionne les résultats de toutes les sources et supprime les doublons.\nconst ctx = $('🧹 Normaliser les critères').first().json;\n\nfunction normUrl(u) {\n  try {\n    const url = new URL(String(u).trim());\n    let host = url.hostname.toLowerCase();\n    if (/(^|\\.)linkedin\\.com$/.test(host)) host = 'www.linkedin.com';\n    const path = decodeURIComponent(url.pathname).replace(/\\/+$/, '').toLowerCase();\n    return 'https://' + host + path;\n  } catch (e) {\n    return null;\n  }\n}\n\nconst byUrl = new Map();\nfor (const it of $input.all()) {\n  const c = it.json;\n  if (!c || !c.profileUrl) continue;\n  const key = normUrl(c.profileUrl);\n  if (!key) continue;\n  const prev = byUrl.get(key);\n  if (!prev) {\n    byUrl.set(key, { ...c, profileUrl: key, queries: [c.query].filter(Boolean) });\n  } else {\n    if (c.query && !prev.queries.includes(c.query)) prev.queries.push(c.query);\n    // Un profil remonté par plusieurs requêtes est souvent plus pertinent.\n    if ((c.snippet || '').length > (prev.snippet || '').length) prev.snippet = c.snippet;\n  }\n}\n\nconst all = [...byUrl.values()]\n  .sort((a, b) => b.queries.length - a.queries.length)\n  .slice(0, ctx.maxProfiles);\n\nif (!all.length) return [{ json: { noResults: true } }];\n\nreturn all.map((c, i) => ({ json: { ...c, candidateId: 'C' + (i + 1), hits: c.queries.length } }));\n"
+      },
+      "id": "bb2e5a41-02ec-58dd-b37e-02655a834448",
+      "name": "🧬 Dédoublonner",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1320,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "683cdda9-e350-5f7e-a334-89e10552c163",
+              "leftValue": "={{ $json.noResults === true }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "32d7f6f3-caa5-5ef3-ad09-3fed0b953757",
+      "name": "Des profils trouvés ?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1540,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Regroupe les profils par lots pour limiter le nombre d'appels à Claude.\nconst ctx = $('🧹 Normaliser les critères').first().json;\nconst scoringGuide = $('🗂️ Préparer les tâches').first().json.scoringGuide;\nconst size = ctx.config.SCORING_BATCH_SIZE;\nconst candidates = $input.all().map(i => i.json);\n\nconst system = [\n  \"Tu évalues des profils trouvés en ligne pour un besoin de recrutement précis.\",\n  \"Tu ne vois qu'un extrait public (titre, résumé, quelques infos), pas le profil complet.\",\n  \"Règles :\",\n  \"- note de 0 à 100 l'adéquation avec le besoin, selon le guide de notation fourni ;\",\n  \"- n'invente rien : si une info manque, écris \\\"non visible\\\" et baisse la confiance, pas la note par défaut ;\",\n  \"- un profil hors localisation, hors métier ou correspondant à une exclusion prend moins de 30 ;\",\n  \"- justification : 2 phrases factuelles qui citent ce que tu as vu dans l'extrait ;\",\n  \"- accroche : 2 phrases d'approche personnalisées, tutoiement interdit, sans flatterie, qui citent un élément précis du profil ;\",\n  \"- renvoie une évaluation par profil, avec le même id.\",\n].join('\\n');\n\nconst batches = [];\nfor (let i = 0; i < candidates.length; i += size) {\n  const chunk = candidates.slice(i, i + size).map(c => ({\n    id: c.candidateId,\n    plateforme: c.platform,\n    url: c.profileUrl,\n    nom_visible: c.name || '',\n    titre_visible: c.headline || '',\n    entreprise_visible: c.company || '',\n    localisation_visible: c.location || '',\n    extrait: c.snippet || '',\n    infos_complementaires: c.extra || null,\n    nb_requetes_ayant_trouve_ce_profil: c.hits,\n  }));\n\n  const user = [\n    'Besoin :',\n    JSON.stringify(ctx.criteria, null, 2),\n    '',\n    'Guide de notation :',\n    scoringGuide,\n    '',\n    'Profils à évaluer :',\n    JSON.stringify(chunk, null, 2),\n  ].join('\\n');\n\n  batches.push({\n    json: {\n      batchIndex: batches.length,\n      ids: chunk.map(c => c.id),\n      llmBody: {\n        model: ctx.config.CLAUDE_MODEL,\n        max_tokens: 16000,\n        fallbacks: 'default',\n        output_config: {\n          effort: 'medium',\n          format: {\n            type: 'json_schema',\n            schema: {\n              type: 'object',\n              additionalProperties: false,\n              required: ['evaluations'],\n              properties: {\n                evaluations: {\n                  type: 'array',\n                  items: {\n                    type: 'object',\n                    additionalProperties: false,\n                    required: ['id', 'score', 'confiance', 'nom', 'titre_actuel', 'entreprise_actuelle',\n                      'localisation', 'seniorite_estimee', 'points_forts', 'points_vigilance',\n                      'justification', 'accroche'],\n                    properties: {\n                      id: { type: 'string' },\n                      score: { type: 'integer', description: 'De 0 à 100.' },\n                      confiance: { type: 'string', enum: ['faible', 'moyenne', 'forte'] },\n                      nom: { type: 'string' },\n                      titre_actuel: { type: 'string' },\n                      entreprise_actuelle: { type: 'string' },\n                      localisation: { type: 'string' },\n                      seniorite_estimee: { type: 'string' },\n                      points_forts: { type: 'string' },\n                      points_vigilance: { type: 'string' },\n                      justification: { type: 'string' },\n                      accroche: { type: 'string' },\n                    },\n                  },\n                },\n              },\n            },\n          },\n        },\n        system,\n        messages: [{ role: 'user', content: user }],\n      },\n    },\n  });\n}\nreturn batches;\n"
+      },
+      "id": "76e0a4c8-880f-50fb-adba-30cfdff51506",
+      "name": "📦 Lots pour scoring",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1760,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "anthropicApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "anthropic-beta",
+              "value": "server-side-fallback-2026-07-01"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.llmBody) }}",
+        "options": {
+          "timeout": 180000
+        }
+      },
+      "id": "929ef88b-5792-5f13-b874-920b097bc96e",
+      "name": "🤖 Claude · Noter les profils",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1980,
+        200
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "jsCode": "function readClaude(resp, label) {\n  if (!resp || !Array.isArray(resp.content)) {\n    throw new Error(label + ' : réponse Claude inattendue : ' + JSON.stringify(resp).slice(0, 500));\n  }\n  if (resp.stop_reason === 'refusal') {\n    throw new Error(label + ' : Claude a refusé la demande (' + JSON.stringify(resp.stop_details) + ')');\n  }\n  if (resp.stop_reason === 'max_tokens') {\n    throw new Error(label + ' : réponse coupée (max_tokens). Réduis la taille des lots.');\n  }\n  const text = resp.content.filter(b => b.type === 'text').map(b => b.text).join('');\n  try {\n    return JSON.parse(text);\n  } catch (e) {\n    throw new Error(label + ' : JSON illisible : ' + text.slice(0, 500));\n  }\n}\n\n// Rattache les notes de Claude aux profils et prépare les lignes du Sheet.\nconst ctx = $('🧹 Normaliser les critères').first().json;\nconst byId = new Map($('🧬 Dédoublonner').all().map(i => [i.json.candidateId, i.json]));\n\nconst rows = [];\nconst failed = [];\n$input.all().forEach((it, idx) => {\n  let parsed;\n  try {\n    parsed = readClaude(it.json, 'Scoring lot ' + idx);\n  } catch (e) {\n    failed.push(e.message);\n    return;\n  }\n  for (const ev of parsed.evaluations || []) {\n    const c = byId.get(ev.id);\n    if (!c) continue;\n    rows.push({\n      recherche_id: ctx.searchId,\n      date: ctx.submittedAt,\n      poste_recherche: ctx.criteria.poste,\n      score: Math.max(0, Math.min(100, Number(ev.score) || 0)),\n      confiance: ev.confiance,\n      nom: ev.nom || c.name || '',\n      titre_actuel: ev.titre_actuel || c.headline || '',\n      entreprise_actuelle: ev.entreprise_actuelle || c.company || '',\n      localisation: ev.localisation || c.location || '',\n      seniorite_estimee: ev.seniorite_estimee,\n      plateforme: c.platform,\n      url_profil: c.profileUrl,\n      points_forts: ev.points_forts,\n      points_vigilance: ev.points_vigilance,\n      justification: ev.justification,\n      accroche: ev.accroche,\n      requetes: (c.queries || []).join(' || '),\n      statut: 'À contacter',\n      date_suppression_prevue: $now.plus({ months: 24 }).toISODate(),\n    });\n  }\n});\n\nif (!rows.length) {\n  throw new Error('Aucun profil noté. Erreurs : ' + failed.join(' | '));\n}\n\nrows.sort((a, b) => b.score - a.score);\nreturn rows.map(r => ({ json: r }));\n"
+      },
+      "id": "9c31386c-5cfe-5d11-bc43-4a3f3cfc133a",
+      "name": "📊 Fusionner et trier",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2200,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('🧹 Normaliser les critères').first().json.config.GSHEET_ID }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "={{ $('🧹 Normaliser les critères').first().json.config.GSHEET_TAB }}",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      },
+      "id": "00485b32-5ae0-54aa-a1b7-bc421bfe4233",
+      "name": "📄 Enregistrer dans Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        2420,
+        200
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "function readClaude(resp, label) {\n  if (!resp || !Array.isArray(resp.content)) {\n    throw new Error(label + ' : réponse Claude inattendue : ' + JSON.stringify(resp).slice(0, 500));\n  }\n  if (resp.stop_reason === 'refusal') {\n    throw new Error(label + ' : Claude a refusé la demande (' + JSON.stringify(resp.stop_details) + ')');\n  }\n  if (resp.stop_reason === 'max_tokens') {\n    throw new Error(label + ' : réponse coupée (max_tokens). Réduis la taille des lots.');\n  }\n  const text = resp.content.filter(b => b.type === 'text').map(b => b.text).join('');\n  try {\n    return JSON.parse(text);\n  } catch (e) {\n    throw new Error(label + ' : JSON illisible : ' + text.slice(0, 500));\n  }\n}\n\n// Construit l'email récapitulatif à partir des profils notés.\nconst ctx = $('🧹 Normaliser les critères').first().json;\nconst all = $('📊 Fusionner et trier').all().map(i => i.json);\n// Les lots que Claude n'a pas pu noter sont signalés dans l'email.\nconst errors = [];\n$('🤖 Claude · Noter les profils').all().forEach((it, idx) => {\n  try { readClaude(it.json, 'Lot ' + (idx + 1)); } catch (e) { errors.push(e.message); }\n});\nconst min = ctx.config.MIN_SCORE_EMAIL;\n\nlet shown = all.filter(r => r.score >= min);\nconst belowThreshold = shown.length === 0;\nif (belowThreshold) shown = all.slice(0, 10);\n\nconst esc = s => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\nconst color = s => (s >= 75 ? '#1a7f37' : s >= 55 ? '#9a6700' : '#cf222e');\n\nconst rowsHtml = shown.map(r => `\n  <tr>\n    <td style=\"padding:8px;border-bottom:1px solid #eee;font-weight:bold;color:${color(r.score)}\">${r.score}</td>\n    <td style=\"padding:8px;border-bottom:1px solid #eee\">\n      <a href=\"${esc(r.url_profil)}\">${esc(r.nom || 'Profil')}</a><br>\n      <span style=\"color:#555\">${esc(r.titre_actuel)}${r.entreprise_actuelle ? ' · ' + esc(r.entreprise_actuelle) : ''}</span><br>\n      <span style=\"color:#888;font-size:12px\">${esc(r.plateforme)} · ${esc(r.localisation)} · confiance ${esc(r.confiance)}</span>\n    </td>\n    <td style=\"padding:8px;border-bottom:1px solid #eee;font-size:13px\">\n      <b>+</b> ${esc(r.points_forts)}<br><b>!</b> ${esc(r.points_vigilance)}<br>\n      <i style=\"color:#555\">${esc(r.accroche)}</i>\n    </td>\n  </tr>`).join('');\n\nconst sheetUrl = 'https://docs.google.com/spreadsheets/d/' + ctx.config.GSHEET_ID;\nconst html = `\n<div style=\"font-family:Arial,sans-serif;max-width:900px\">\n  <h2 style=\"margin-bottom:4px\">${esc(ctx.criteria.poste)}</h2>\n  <p style=\"color:#555;margin-top:0\">${all.length} profils analysés · ${all.filter(r => r.score >= min).length} au-dessus de ${min}/100 · réf. ${ctx.searchId}</p>\n  ${belowThreshold ? `<p style=\"background:#fff8c5;padding:8px\">Aucun profil n'atteint ${min}/100. Voici les 10 meilleurs : les critères sont peut-être trop serrés.</p>` : ''}\n  ${errors.length ? `<p style=\"background:#ffebe9;padding:8px\">Certains lots n'ont pas pu être notés : ${esc(errors.join(' | '))}</p>` : ''}\n  <table style=\"border-collapse:collapse;width:100%\">\n    <tr style=\"text-align:left;background:#f6f8fa\"><th style=\"padding:8px\">Score</th><th style=\"padding:8px\">Profil</th><th style=\"padding:8px\">Analyse</th></tr>\n    ${rowsHtml}\n  </table>\n  <p><a href=\"${sheetUrl}\">Tous les profils dans le Google Sheet</a></p>\n  <p style=\"color:#888;font-size:11px\">Notes établies sur des extraits publics, à vérifier sur le profil avant tout contact.\n  RGPD : ces personnes doivent être informées de la collecte au plus tard au premier contact, et dans un délai d'un mois maximum.\n  Purge prévue des lignes à la date indiquée dans le Sheet.</p>\n</div>`;\n\nreturn [{\n  json: {\n    to: ctx.email,\n    subject: `[Sourcing] ${ctx.criteria.poste} : ${shown.length} profil${shown.length > 1 ? 's' : ''} retenu${shown.length > 1 ? 's' : ''}`,\n    html,\n  },\n}];\n"
+      },
+      "id": "4702d3c4-9a5b-5817-a9e0-4b3f72d983dd",
+      "name": "✉️ Construire l'email",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2640,
+        200
+      ],
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.to }}",
+        "subject": "={{ $json.subject }}",
+        "emailType": "html",
+        "message": "={{ $json.html }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "da03cece-0298-5413-9910-110668e52d70",
+      "name": "📬 Envoyer les résultats",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        2860,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('🧹 Normaliser les critères').first().json.email }}",
+        "subject": "=[Sourcing] {{ $('🧹 Normaliser les critères').first().json.criteria.poste }} : aucun profil trouvé",
+        "emailType": "html",
+        "message": "=<p>Aucun profil trouvé pour <b>{{ $('🧹 Normaliser les critères').first().json.criteria.poste }}</b> (réf. {{ $('🧹 Normaliser les critères').first().json.searchId }}).</p><p>Requêtes utilisées :</p><ul>{{ $('🗂️ Préparer les tâches').all().map(i => '<li>' + i.json.query + '</li>').join('') }}</ul><p>Pistes : élargir la localisation, retirer une compétence indispensable, ou vérifier dans les exécutions n8n qu'une source n'a pas renvoyé d'erreur (clé API, quota).</p>",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "e61d6dc3-b543-56a5-a3b9-4a5248729ffb",
+      "name": "📭 Prévenir : aucun résultat",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1760,
+        420
+      ]
+    }
+  ],
+  "connections": {
+    "📝 Formulaire de recherche": {
+      "main": [
+        [
+          {
+            "node": "⚙️ Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⚙️ Config": {
+      "main": [
+        [
+          {
+            "node": "🧹 Normaliser les critères",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🧹 Normaliser les critères": {
+      "main": [
+        [
+          {
+            "node": "🤖 Claude · Générer les requêtes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🤖 Claude · Générer les requêtes": {
+      "main": [
+        [
+          {
+            "node": "🗂️ Préparer les tâches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🗂️ Préparer les tâches": {
+      "main": [
+        [
+          {
+            "node": "🔎 Lancer les recherches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔎 Lancer les recherches": {
+      "main": [
+        [
+          {
+            "node": "🧬 Dédoublonner",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🧬 Dédoublonner": {
+      "main": [
+        [
+          {
+            "node": "Des profils trouvés ?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Des profils trouvés ?": {
+      "main": [
+        [
+          {
+            "node": "📦 Lots pour scoring",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "📭 Prévenir : aucun résultat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📦 Lots pour scoring": {
+      "main": [
+        [
+          {
+            "node": "🤖 Claude · Noter les profils",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🤖 Claude · Noter les profils": {
+      "main": [
+        [
+          {
+            "node": "📊 Fusionner et trier",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📊 Fusionner et trier": {
+      "main": [
+        [
+          {
+            "node": "📄 Enregistrer dans Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📄 Enregistrer dans Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "✉️ Construire l'email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "✉️ Construire l'email": {
+      "main": [
+        [
+          {
+            "node": "📬 Envoyer les résultats",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true
+  },
+  "pinData": {}
+}
